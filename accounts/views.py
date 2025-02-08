@@ -1,11 +1,14 @@
 from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserSerializer, RegisterSerializer, UserProfileSerializer
+from .serializers import UserSerializer, RegisterSerializer, UserProfileSerializer, LoginSerializer
 from .models import User
 from .permissions import IsAdmin, IsManager, IsHR
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from rest_framework import status
+
 
 # ViewSet برای مشاهده و مدیریت کاربران
 
@@ -49,3 +52,15 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class LoginView(generics.GenericAPIView):
+    """ویو برای ورود کاربران و دریافت توکن JWT"""
+    serializer_class = LoginSerializer
+    # همه کاربران می‌توانند وارد شوند
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
