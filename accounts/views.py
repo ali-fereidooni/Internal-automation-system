@@ -1,7 +1,7 @@
 from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserSerializer, RegisterSerializer, UserProfileSerializer, LoginSerializer
+from .serializers import UserSerializer, UserRegisterSerializer, UserProfileSerializer, LoginSerializer
 from .models import User
 from .permissions import IsAdmin, IsManager, IsHR
 from rest_framework.permissions import IsAuthenticated
@@ -20,6 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsManager | IsAdmin | IsHR]
 
+
 # API برای ثبت‌نام کاربر
 
 
@@ -32,25 +33,25 @@ class UserListView(generics.ListAPIView):
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+    serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]
 
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        user = User.objects.get(username=response.data['username'])
-        refresh = RefreshToken.for_user(user)
-        response.data['tokens'] = {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
-        return response
+    def post(self, request):
+        srz_data = UserRegisterSerializer(data=request.POST)
+        if srz_data.is_valid():
+            srz_data.create(srz_data.validated_data)
+
+            return Response(data=srz_data.data, status=status.HTTP_201_CREATED)
+        return Response(data=srz_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
+    """نمایش و ویرایش پروفایل کاربر"""
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        """برگرداندن پروفایل مربوط به کاربر لاگین شده"""
         return self.request.user
 
 

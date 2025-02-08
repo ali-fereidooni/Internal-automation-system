@@ -13,31 +13,37 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'phone_number', 'role']
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        write_only=True, required=True, style={'input_type': 'password'})
-    confirm_password = serializers.CharField(write_only=True, required=True)
+def clean_email(value):
+    if 'admin' in value:
+        raise serializers.ValidationError('admin cant be in email')
+    return value
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField(required=True, write_only=True)
 
     class Meta:
         model = User
         fields = ['username', 'phone_number',
                   'email', 'password', 'confirm_password']
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'email': {'validators': (clean_email,)}
+        }
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        return user
+        del validated_data['confirm_password']
+        return User.objects.create_user(**validated_data)
 
-    def clean_password2(self):
-        cd = self.validated_data
-        if cd['password'] and cd['confirm_password'] and cd['password'] != cd['confirm_password']:
-            raise ValidationError('passwords didnt match')
-        return cd['confirm_password']
+    def validate_name(self, value):
+        if value == 'admin':
+            raise serializers.ValidationError('name cant be admin')
+        return value
 
-    def save(self):
-        user = super().save()
-        user.set_password(self.validated_data['password'])
-        user.save()
-        return user
+    def validate_password(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError('passwords didnt match')
+        return data
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
