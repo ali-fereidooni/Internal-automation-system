@@ -20,12 +20,11 @@ def clean_email(value):
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(required=True, write_only=True)
+    confirm_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ['username', 'phone_number',
-                  'email', 'password', 'confirm_password']
+        fields = ('username', 'email', 'password', 'confirm_password')
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'validators': (clean_email,)}
@@ -35,21 +34,21 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         del validated_data['confirm_password']
         return User.objects.create_user(**validated_data)
 
-    def validate_name(self, value):
+    def validate_username(self, value):
         if value == 'admin':
-            raise serializers.ValidationError('name cant be admin')
+            raise serializers.ValidationError('username cant be `admin`')
         return value
 
-    def validate_password(self, data):
+    def validate(self, data):
         if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError('passwords didnt match')
+            raise serializers.ValidationError('passwords must match')
         return data
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role']
+        fields = '__all__'
 
 
 class LoginSerializer(serializers.Serializer):
