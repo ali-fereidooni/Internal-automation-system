@@ -1,7 +1,5 @@
 from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from accounts.models import User
 
 
 class Task(models.Model):
@@ -27,6 +25,7 @@ class Task(models.Model):
         max_length=15, choices=STATUS_CHOICES, default='pending')
     due_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.title} - {self.assigned_to.username}"

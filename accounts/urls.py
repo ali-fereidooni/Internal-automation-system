@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import UserViewSet, RegisterView, UserListView, UserProfileView, LoginView
 
 router = DefaultRouter()
-router.register(r'accounts', UserViewSet)
+router.register(r'accounts', UserViewSet, basename='accounts')
 
 app_name = 'accounts'
 urlpatterns = [
