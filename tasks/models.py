@@ -23,9 +23,9 @@ class Task(models.Model):
         max_length=10, choices=PRIORITY_LEVELS, default='medium')
     status = models.CharField(
         max_length=15, choices=STATUS_CHOICES, default='pending')
-    due_date = models.DateField()
+    due_date = models.DateField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.title} - {self.assigned_to.username}"
+        return f"{self.title} "

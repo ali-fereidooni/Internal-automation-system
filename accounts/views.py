@@ -56,8 +56,6 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         user = get_object_or_404(self.queryset, pk=kwargs['pk'])
-        if user != request.user:
-            return Response({'permission denied': 'you are not the owner'}, status=status.HTTP_403_FORBIDDEN)
         srz_data = UserSerializer(
             instance=user, data=request.data, partial=True)
         if srz_data.is_valid():

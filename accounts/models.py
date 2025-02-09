@@ -30,7 +30,7 @@ class User(AbstractUser):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.role}"
+        return f"{self.username}- {self.role}"
 
     @property
     def is_staff(self):
