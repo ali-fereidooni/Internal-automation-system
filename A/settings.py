@@ -132,21 +132,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
 
-APPEND_SLASH = False
-
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # برای کاربران عادی
+        'rest_framework.authentication.TokenAuthentication',  # برای توکن
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # برای JWT
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        # فقط کاربران لاگین کرده دسترسی دارند
+        'rest_framework.permissions.IsAuthenticated',
     ),
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
-    'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
-    'SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER': timedelta(days=1),
-    'SLIDING_TOKEN_LIFETIME_LATE_USER': timedelta(days=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # مدت اعتبار توکن دسترسی
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # مدت اعتبار توکن تازه‌سازی
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }

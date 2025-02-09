@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions
+from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Task
@@ -7,6 +7,10 @@ from .serializers import TaskSerializer
 from accounts.permissions import IsAdmin, IsManager
 
 # 🔹 1️⃣ ایجاد تسک (فقط توسط مدیران)
+
+
+class TaskViewset(viewsets.ModelViewSet):
+    pass
 
 
 class TaskCreateView(generics.CreateAPIView):

@@ -24,7 +24,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'confirm_password')
+        fields = ('username', 'phone_number', 'email',
+                  'password', 'confirm_password')
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'validators': (clean_email,)}
@@ -48,7 +49,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('username', 'phone_number', 'email', 'role')
 
 
 class LoginSerializer(serializers.Serializer):
@@ -79,3 +80,9 @@ class LoginSerializer(serializers.Serializer):
                 'role': user.role
             }
         }
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'phone_number', 'role']
