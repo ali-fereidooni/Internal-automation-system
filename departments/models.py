@@ -11,6 +11,7 @@ class Department(models.Model):
 
     departments = models.CharField(
         max_length=10, choices=DEPARTMENTS_CHOICES, default='manager')
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.departments
