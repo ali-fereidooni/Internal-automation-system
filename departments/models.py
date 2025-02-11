@@ -9,8 +9,11 @@ class Department(models.Model):
         ('marketing', 'Marketing'),
     ]
 
-    department = models.CharField(
-        max_length=10, choices=DEPARTMENTS_CHOICES, default='develope')
+    departments = models.CharField(
+        max_length=10, choices=DEPARTMENTS_CHOICES, default='manager')
+
+    def __str__(self):
+        return self.departments
 
 
 class Position(models.Model):

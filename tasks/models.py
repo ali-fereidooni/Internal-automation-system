@@ -19,13 +19,14 @@ class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     department = models.ForeignKey(
-        Department, on_delete=models.CASCADE, related_name="tasks")
+        Department, on_delete=models.CASCADE, related_name="deptasks")
     assigned_to = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="tasks")
+        User, on_delete=models.CASCADE, related_name="usertasks")
     priority = models.CharField(
         max_length=10, choices=PRIORITY_LEVELS, default='medium')
     status = models.CharField(
         max_length=15, choices=STATUS_CHOICES, default='pending')
+    compeleted = models.BooleanField(default=False)
     due_date = models.DateField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
