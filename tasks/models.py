@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import User
+from departments.models import Department
 
 
 class Task(models.Model):
@@ -17,6 +18,8 @@ class Task(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField()
+    department = models.ForeignKey(
+        Department, on_delete=models.CASCADE, related_name="tasks")
     assigned_to = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="tasks")
     priority = models.CharField(

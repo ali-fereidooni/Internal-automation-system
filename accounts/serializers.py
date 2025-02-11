@@ -9,8 +9,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email',  'first_name',
-                  'last_name', 'phone_number', 'role']
+        exclude = ('password', 'is_active', 'is_admin', 'groups',
+                   'user_permissions', 'last_login', 'date_joined')
 
 
 def clean_email(value):
@@ -21,10 +21,11 @@ def clean_email(value):
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
+    role = serializers.CharField()
 
     class Meta:
         model = User
-        fields = ('username', 'phone_number', 'email',
+        fields = ('username', 'phone_number', 'email', 'role',
                   'password', 'confirm_password')
         extra_kwargs = {
             'password': {'write_only': True},

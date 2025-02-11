@@ -17,7 +17,7 @@ from rest_framework import status
 
 
 class UserRegister(APIView):
-    permission_classes = [IsHR]
+    permission_classes = [IsHR | IsAdmin]
 
     def post(self, request):
         ser_data = UserRegisterSerializer(data=request.POST)
