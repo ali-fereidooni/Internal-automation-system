@@ -1,6 +1,8 @@
 from django.db import models
 from accounts.models import User
 from departments.models import Department
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 
 class Task(models.Model):
@@ -12,14 +14,14 @@ class Task(models.Model):
 
     STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('in_progress', 'In Progress'),
+        ('in progress', 'In Progress'),
         ('completed', 'Completed'),
     ]
 
     title = models.CharField(max_length=255)
     description = models.TextField()
-    department = models.ForeignKey(
-        Department, on_delete=models.CASCADE, related_name="deptasks")
+    department = models.OneToOneField(
+        Department, on_delete=models.CASCADE, related_name="tasks", to_field='name')
     assigned_to = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="usertasks")
     priority = models.CharField(

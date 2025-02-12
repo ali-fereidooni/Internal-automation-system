@@ -7,6 +7,7 @@ from .serializers import TaskSerializer
 from accounts.permissions import IsAdmin, IsManager
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from departments.models import Department
 
 
 # 🔹 1️⃣ ایجاد تسک (فقط توسط مدیران)
