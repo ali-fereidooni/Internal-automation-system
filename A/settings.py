@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'tasks.apps.TasksConfig',
     'leaves.apps.LeavesConfig',
+    'attendance.apps.AttendanceConfig',
 ]
 
 MIDDLEWARE = [

@@ -57,7 +57,7 @@ class TaskCreateView(generics.CreateAPIView):
 
         # برگرداندن فیلدهای خالی
         empty_fields = {
-            field_name: "" for field_name in serializer.fields.keys()}
+            field_name: "This field is required !" for field_name in serializer.fields.keys()}
 
         # افزودن گزینه‌های کلید خارجی (لیست کاربران موجود)
         empty_fields["user_choices"] = [
