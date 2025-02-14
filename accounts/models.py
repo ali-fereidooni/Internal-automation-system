@@ -26,9 +26,6 @@ class User(AbstractUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['phone_number',]
 
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
-
     def __str__(self):
         return f"{self.username}- {self.role}"
 
