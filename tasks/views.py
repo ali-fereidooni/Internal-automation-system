@@ -2,12 +2,13 @@ from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Task
-from .serializers import TaskSerializer
+from .serializers import TaskCreateSerializer, TaskSerializer
 # ایجاد فایل permissions.py در users
 from accounts.permissions import IsAdmin, IsManager
 from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from departments.models import Department
+from django.shortcuts import get_list_or_404
+from accounts.models import User
 
 
 # 🔹 1️⃣ ایجاد تسک (فقط توسط مدیران)
@@ -24,7 +25,7 @@ class TaskViewset(viewsets.ModelViewSet):
         return Response(data=srz_data.data)
 
     def retrieve(self, request, *args, **kwargs):
-        user = get_object_or_404(Task, assigned_to=kwargs['assigned_to'])
+        user = get_object_or_404(Task, user=kwargs['user'])
         srz_data = TaskSerializer(instance=user)
         return Response(data=srz_data.data)
 
@@ -46,16 +47,63 @@ class TaskViewset(viewsets.ModelViewSet):
 
 class TaskCreateView(generics.CreateAPIView):
     queryset = Task.objects.all()
-    serializer_class = TaskSerializer
+    serializer_class = TaskCreateSerializer
     permission_classes = [IsAdmin | IsManager]
     authentication_classes = [JWTAuthentication]
 
-    def post(self, request):
-        ser_data = TaskSerializer(data=request.POST)
-        if ser_data.is_valid():
-            ser_data.create(ser_data.validated_data)
-            return Response(ser_data.data, status=status.HTTP_201_CREATED)
-        return Response(ser_data.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, *args, **kwargs):
+        # ایجاد نمونه خالی از سریالایزر
+        serializer = TaskCreateSerializer()
+
+        # برگرداندن فیلدهای خالی
+        empty_fields = {
+            field_name: "" for field_name in serializer.fields.keys()}
+
+        # افزودن گزینه‌های کلید خارجی (لیست کاربران موجود)
+        empty_fields["user_choices"] = [
+            {"id": user.id, "username": user.username} for user in User.objects.all()
+        ]
+
+        return Response(empty_fields)
+
+    def post(self, request, *args, **kwargs):
+        # داده‌های ورودی را دریافت می‌کنیم
+        data = request.data
+
+        # بررسی پر بودن فیلدها
+        required_fields = ['title', 'description', 'department', 'priority', 'user',
+                           'status',]
+        missing_fields = [
+            field for field in required_fields if field not in data or not data[field]]
+
+        if missing_fields:
+            return Response({"error": f"این فیلدها اجباری هستند: {', '.join(missing_fields)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # بررسی اینکه آیا یوزر با ID داده شده وجود دارد
+        try:
+            user = User.objects.get(username=data['user'])
+        except User.DoesNotExist:
+            return Response({"error": "کاربر انتخاب شده وجود ندارد."}, status=status.HTTP_404_NOT_FOUND)
+    # ایجاد و ذخیره تسک در دیتابیس
+        task = Task.objects.create(
+            title=data['title'],
+            description=data['description'],
+            department=data['department'],
+            priority=data['priority'],
+            user=user,
+            status=data['status'],
+        )
+
+        # سریالایزر برای بازگشت داده‌های تسک ایجاد شده
+        serializer = TaskSerializer(task)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TaskListView(generics.ListAPIView):
+    def get(self, request):
+        tasks = Task.objects.all()
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
 
 
 class TaskStatusUpdateView(generics.UpdateAPIView):

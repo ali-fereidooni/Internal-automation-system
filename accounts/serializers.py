@@ -13,23 +13,16 @@ class UserSerializer(serializers.ModelSerializer):
                    'user_permissions', 'last_login', 'date_joined')
 
 
-def clean_email(value):
-    if 'admin' in value:
-        raise serializers.ValidationError('admin cant be in email')
-    return value
-
-
 class UserRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
     role = serializers.CharField()
 
     class Meta:
         model = User
-        fields = ('username', 'phone_number', 'email', 'role',
+        fields = ('username', 'phone_number', 'role',
                   'password', 'confirm_password')
         extra_kwargs = {
-            'password': {'write_only': True},
-            'email': {'validators': (clean_email,)}
+            'password': {'write_only': True}
         }
 
     def create(self, validated_data):
@@ -50,7 +43,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'phone_number', 'email', 'role')
+        fields = ('id', 'username', 'phone_number', 'email', 'role')
 
 
 class LoginSerializer(serializers.Serializer):
