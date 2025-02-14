@@ -10,12 +10,8 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
     serializer_class = LeaveRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:  # مدیران می‌توانند همه درخواست‌ها را ببینند
-            return LeaveRequest.objects.all()
-        # کارمندان فقط درخواست‌های خود را ببینند
-        return LeaveRequest.objects.filter(employee=user)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         # تنظیم کاربر فعلی به عنوان درخواست‌دهنده

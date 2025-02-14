@@ -8,7 +8,7 @@ class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    list_display = ('email', 'phone_number', 'is_admin')
+    list_display = ('username', 'email', 'phone_number', 'is_admin')
     list_filter = ('role',)
     readonly_fields = ('last_login',)
 
