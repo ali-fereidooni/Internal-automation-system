@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # installed apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',
     # local apps
     'accounts.apps.AccountsConfig',
     'tasks.apps.TasksConfig',
@@ -143,6 +144,7 @@ REST_FRAMEWORK = {
         # فقط کاربران لاگین کرده دسترسی دارند
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
