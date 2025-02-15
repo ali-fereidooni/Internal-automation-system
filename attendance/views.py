@@ -1,9 +1,10 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.timezone import now
 from .models import Attendance
 from .serializers import AttendanceSerializer
+from accounts.permissions import IsAdmin, IsManager, IsHR
 
 
 class CheckInView(APIView):
@@ -47,3 +48,22 @@ class CheckOutView(APIView):
         attendance.check_out = now().time()
         attendance.save()
         return Response({"message": "Check-out successful!", "data": AttendanceSerializer(attendance).data}, status=200)
+
+
+class WorkReportsViewsest(viewsets.ModelViewSet):
+    queryset = Attendance.objects.all()
+    serializer_class = AttendanceSerializer
+    permission_classes = [IsAdmin | IsManager | IsHR]
+
+    def list(self, request):
+        """
+        گزارش کاری کاربر را بر اساس تاریخ برمی‌گرداند.
+        """
+        user_reports = Attendance.objects.filter(user=request.user)
+
+        # سریالایز کردن داده‌ها
+        response_data = {
+            "reports": AttendanceSerializer(user_reports, many=True).data,
+        }
+
+        return Response(response_data)
