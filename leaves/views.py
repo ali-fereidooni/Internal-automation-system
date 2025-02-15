@@ -3,38 +3,51 @@ from rest_framework.response import Response
 from .models import LeaveRequest
 from .serializers import LeaveRequestSerializer
 from rest_framework import generics, status
-from accounts.permissions import IsEmployee, IsManager
+from accounts.permissions import IsEmployee, IsManager, IsHR, IsAdmin
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.db import DatabaseError
 
 
 class LeaveRequestViewSet(viewsets.ModelViewSet):
     serializer_class = LeaveRequestSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsManager | IsHR | IsAdmin]
     authentication_classes = [JWTAuthentication]
     queryset = LeaveRequest.objects.all()
 
-    def list(self, request, *args, **kwargs):
-        requests = self.serializer_class(self.queryset, many=True).data
+    def list(self, request):
+        """
+        درخواست‌های کاربر را بر اساس وضعیت دسته‌بندی کرده و برمی‌گرداند.
+        """
+        user_requests = LeaveRequest.objects.all()
+
+        # دسته‌بندی درخواست‌ها
+        pending_requests = user_requests.filter(status="pending")
+        approved_requests = user_requests.filter(status="approved")
+        rejected_requests = user_requests.filter(status="rejected")
+
+        # سریالایز کردن داده‌ها
+        response_data = {
+            "pending": LeaveRequestSerializer(pending_requests, many=True).data,
+            "approved": LeaveRequestSerializer(approved_requests, many=True).data,
+            "rejected": LeaveRequestSerializer(rejected_requests, many=True).data,
+        }
+
+        return Response(response_data)
+
+    def post(self, request, *args, **kwargs):
+        request_id = request.data.get("id")
+        new_status = request.data.get("status")
+
+        if new_status not in ["approved", "rejected"]:
+            return Response({"error": "وضعیت نامعتبر است. فقط 'approved' یا 'rejected' مجاز است."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            return Response(requests)
+            leave_request = LeaveRequest.objects.get(id=request_id)
+            leave_request.status = new_status
+            leave_request.save()
+            return Response({"message": f"درخواست با موفقیت {new_status} شد."}, status=status.HTTP_200_OK)
         except LeaveRequest.DoesNotExist:
-            return Response({'message': 'No leave request found'}, status=status.HTTP_404_NOT_FOUND)
-        except DatabaseError:
-            return Response({"error": "database error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return super().create(request, *args, **kwargs)
-
-
-class RequestLeaveView(generics.CreateAPIView):
-    """درخواست مرخصی (فقط برای کارمندان)"""
-    serializer_class = LeaveRequestSerializer
-    permission_classes = [IsEmployee]
+            return Response({"error": "درخواست موردنظر یافت نشد."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class CreateLeaveRequest(generics.CreateAPIView):
@@ -43,9 +56,21 @@ class CreateLeaveRequest(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
-        list = LeaveRequest.objects.filter(employee=request.user)
-        serializer = LeaveRequestSerializer(list, many=True)
-        return Response(serializer.data)
+        user_requests = LeaveRequest.objects.filter(employee=request.user)
+
+        # دسته‌بندی درخواست‌ها
+        pending_requests = user_requests.filter(status="pending")
+        approved_requests = user_requests.filter(status="approved")
+        rejected_requests = user_requests.filter(status="rejected")
+
+        # سریالایز کردن داده‌ها
+        response_data = {
+            "pending": LeaveRequestSerializer(pending_requests, many=True).data,
+            "approved": LeaveRequestSerializer(approved_requests, many=True).data,
+            "rejected": LeaveRequestSerializer(rejected_requests, many=True).data,
+        }
+
+        return Response(response_data)
 
     def post(self, request, *args, **kwargs):
         # داده‌های ورودی را دریافت می‌کنیم
@@ -77,9 +102,3 @@ class CreateLeaveRequest(generics.CreateAPIView):
         # سریالایزر برای بازگشت داده‌های تسک ایجاد شده
         serializer = LeaveRequestSerializer(task)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class ApproveLeaveView(generics.UpdateAPIView):
-    """تأیید یا رد مرخصی (فقط برای مدیران)"""
-    serializer_class = LeaveRequestSerializer
-    permission_classes = [IsManager]
