@@ -9,6 +9,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_list_or_404
 from accounts.models import User
+from departments.models import Projects
 
 
 # 🔹 1️⃣ ایجاد تسک (فقط توسط مدیران)
@@ -71,7 +72,7 @@ class TaskCreateView(generics.CreateAPIView):
         data = request.data
 
         # بررسی پر بودن فیلدها
-        required_fields = ['title', 'description', 'department', 'priority', 'user',
+        required_fields = ['title', 'description', 'project', 'priority', 'user',
                            'status',]
         missing_fields = [
             field for field in required_fields if field not in data or not data[field]]
@@ -84,11 +85,16 @@ class TaskCreateView(generics.CreateAPIView):
             user = User.objects.get(username=data['user'])
         except User.DoesNotExist:
             return Response({"error": "کاربر انتخاب شده وجود ندارد."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            project = Projects.objects.get(name=data['project'])
+        except Projects.DoesNotExist:
+            return Response({"error": "این پروژه انتخاب شده وجود ندارد."}, status=status.HTTP_404_NOT_FOUND)
     # ایجاد و ذخیره تسک در دیتابیس
         task = Task.objects.create(
             title=data['title'],
             description=data['description'],
-            department=data['department'],
+            project=project,
             priority=data['priority'],
             user=user,
             status=data['status'],

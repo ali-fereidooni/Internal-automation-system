@@ -1,11 +1,11 @@
 from django.urls import path, include
 from .views import ProjectViewSet
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 
-router = DefaultRouter()
-router.register(r'project', ProjectViewSet, basename='admins')
+router = SimpleRouter()
+router.register(r'project', ProjectViewSet, basename='project')
 
 app_name = 'departments'
-url_patterns = [
-    path('projects/', include(router.urls)),
+urlpatterns = [
+    path('', include(router.urls)),
 ]

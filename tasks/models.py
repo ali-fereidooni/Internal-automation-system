@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import User
+from departments.models import Projects
 
 
 class Task(models.Model):
@@ -14,16 +15,11 @@ class Task(models.Model):
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
     ]
-    DEPARTMENTS_CHOICES = [
-        ('manager', 'Manager'),
-        ('develope', 'Develope'),
-        ('sell', 'Sell'),
-        ('marketing', 'Marketing'),
-    ]
 
     title = models.CharField(max_length=255)
     description = models.TextField()
-    department = models.CharField(choices=DEPARTMENTS_CHOICES, max_length=20)
+    project = models.ForeignKey(
+        Projects, on_delete=models.CASCADE, related_name="tasks")
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="tasks", default=None)
     priority = models.CharField(
