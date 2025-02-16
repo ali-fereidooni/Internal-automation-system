@@ -20,10 +20,11 @@ class Departments(models.Model):
 
 
 class Projects(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     department = models.ForeignKey(
         Departments, on_delete=models.CASCADE, related_name='department_projects')
-    members = models.ManyToManyField(User, related_name='project_members')
+    members = models.ManyToManyField(
+        User, related_name='project_members')
 
     def __str__(self):
         return self.name

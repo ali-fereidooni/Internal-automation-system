@@ -23,4 +23,4 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Projects
-        fields = '__all__'
+        fields = ('name', 'department', 'members')
