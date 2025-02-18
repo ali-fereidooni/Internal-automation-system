@@ -1,14 +1,15 @@
 from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserSerializer, UserRegisterSerializer, UserSerializer, LoginSerializer, UserProfileSerializer
-from .models import User
+from .serializers import UserSerializer, UserRegisterSerializer, UserSerializer, LoginSerializer, ProfileSerializer
+from .models import User, Profile
 from .permissions import IsAdmin, IsManager, IsHR
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 # ViewSet برای مشاهده و مدیریت کاربران
@@ -48,12 +49,12 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         return Response(data=srz_data.data)
 
     def retrieve(self, request, *args, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['pk'])
+        user = get_object_or_404(User, username=kwargs['username'])
         srz_data = UserSerializer(instance=user)
         return Response(data=srz_data.data)
 
     def partial_update(self, request, *args, **kwargs):
-        user = get_object_or_404(self.queryset, pk=kwargs['pk'])
+        user = get_object_or_404(self.queryset, username=kwargs['username'])
         srz_data = UserSerializer(
             instance=user, data=request.data, partial=True)
         if srz_data.is_valid():
@@ -68,14 +69,21 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         return Response({'message': 'user deactivated'}, status=status.HTTP_200_OK)
 
 
-class UserProfileView(APIView):
-    # فقط کاربران احراز هویت شده دسترسی دارند
-    permission_classes = [permissions.AllowAny]
-    authentication_classes = [JWTAuthentication]
+class ProfileView(APIView):
+    permission_classes = [IsAdmin | IsManager | IsHR]
+    queryset = Profile.objects.all()
 
     def get(self, request):
-        if request.user.is_anonymous:  # بررسی مجدد برای جلوگیری از AnonymousUser
-            return Response({"error": "User not authenticated"}, status=401)
+        srz_data = ProfileSerializer(instance=self.queryset.all(), many=True)
+        return Response(data=srz_data.data)
 
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data)
+
+class ProfilePictureUploadView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user.profile_picture = request.data.get('profile_picture')
+        user.save()
+        return Response({"message": "Profile picture updated successfully"}, status=status.HTTP_200_OK)

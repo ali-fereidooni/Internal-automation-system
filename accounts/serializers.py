@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Profile
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
 from rest_framework import serializers
@@ -27,7 +27,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         del validated_data['confirm_password']
-        return User.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
+        Profile.objects.create(user=user)
+        return user
 
     def validate_username(self, value):
         if value == 'admin':
@@ -41,6 +43,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = ('id', 'username', 'phone_number', 'email', 'role')
@@ -76,7 +79,13 @@ class LoginSerializer(serializers.Serializer):
         }
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        slug_field='username', queryset=User.objects.all())
+    phone_number = serializers.CharField(
+        source='user.phone_number', read_only=True)
+    role = serializers.CharField(source='user.role', read_only=True)
+
     class Meta:
-        model = User
-        fields = ['id', 'username', 'phone_number', 'role']
+        model = Profile
+        fields = ['user', 'profile_picture', 'phone_number', 'role']

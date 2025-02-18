@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-from .views import AdminUserViewSet, UserRegister, UserProfileView, LoginView
+from .views import AdminUserViewSet, UserRegister, LoginView, ProfileView, ProfilePictureUploadView
 
 router = SimpleRouter()
 router.register(r'adminuser', AdminUserViewSet, basename='adminuser')
@@ -11,7 +11,8 @@ urlpatterns = [
     path('', include(router.urls)),
     path('register/', UserRegister.as_view(), name="register"),
     path('login/', LoginView.as_view(), name="login"),
-    path('profile/', UserProfileView.as_view(), name="profile"),
+    path('profile/', ProfileView.as_view(), name="profile"),
+    path('profile-upload/', ProfilePictureUploadView.as_view(), name='upload'),
     path('token/', TokenObtainPairView.as_view(),
          name='token_obtain_pair'),  # ورود و دریافت توکن
     path('token/refresh/', TokenRefreshView.as_view(),
