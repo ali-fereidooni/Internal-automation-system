@@ -1,14 +1,14 @@
 from rest_framework import viewsets, status
 from accounts.permissions import IsAdmin, IsManager, IsHR
 from .models import Projects, Departments
-from .serializers import ProjectSerializer, ProjectCreateSerializer
+from .serializers import ProjectSerializers, ProjectCreateSerializer
 from rest_framework.response import Response
 from accounts.models import User
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Projects.objects.all()
-    serializer_class = ProjectSerializer
+    serializer_class = ProjectSerializers
     permission_classes = [IsAdmin | IsManager | IsHR]
 
     def list(self, request):
@@ -17,7 +17,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         projects = Projects.objects.all()
 
-        return Response(ProjectSerializer(projects, many=True).data)
+        return Response(ProjectSerializers(projects, many=True).data)
 
     def create(self, request):
         """

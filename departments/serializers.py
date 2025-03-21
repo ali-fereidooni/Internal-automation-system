@@ -9,10 +9,15 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ProjectSerializers(serializers.ModelSerializer):
+    progress = serializers.SerializerMethodField()
+
+    def get_progress(self, obj):
+        return obj.progress_percentage()
+
     class Meta:
         model = Projects
-        fields = '__all__'
+        fields = ('name', 'department', 'members', 'progress')
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):

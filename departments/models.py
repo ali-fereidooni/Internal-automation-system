@@ -28,3 +28,11 @@ class Projects(models.Model):
 
     def __str__(self):
         return self.name
+
+    def progress_percentage(self):
+        total_tasks = self.tasks.count()
+        completed_tasks = self.tasks.filter(status='completed').count()
+        if total_tasks > 0:
+            # درصد با دو رقم اعشار
+            return round((completed_tasks / total_tasks) * 100, 2)
+        return 0

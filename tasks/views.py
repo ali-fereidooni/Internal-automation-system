@@ -129,3 +129,4 @@ class TaskStatusUpdateView(generics.UpdateAPIView):
         task.status = request.data['status']
         task.save()
         return Response(TaskSerializer(task).data, status=status.HTTP_200_OK)
+# Add finished projects and tasks

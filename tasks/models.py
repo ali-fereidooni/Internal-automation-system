@@ -26,10 +26,15 @@ class Task(models.Model):
         max_length=10, choices=PRIORITY_LEVELS, default='medium')
     status = models.CharField(
         max_length=15, choices=STATUS_CHOICES, default='pending')
-    compeleted = models.BooleanField(default=False)
+    completed = models.BooleanField(default=False)
     due_date = models.DateField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.title} "
+
+    def save(self, *args, **kwargs):
+        if self.completed:
+            self.status = 'completed'
+        super(Task, self).save(*args, **kwargs)
